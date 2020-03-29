@@ -24,9 +24,11 @@ class CreditCard(models.Model):
     annual_fee = models.DecimalField(max_digits=10, decimal_places=2)
     cycle_day = models.IntegerField(null=True)
     earning_rates = models.CharField(max_length=200, null=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     
 class Expense(models.Model):
     class PaymentMethodType(models.TextChoices):
