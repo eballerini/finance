@@ -9,12 +9,6 @@ class Account(models.Model):
         
     name = models.CharField(max_length=100)
     currency_code = models.CharField(max_length=3, choices=Currency.choices, default=Currency.CAD)
-    
-# class PaymentMethod(models.Model):
-#     class Meta:
-#         abstract = True
-# 
-# 
             
 class CreditCard(models.Model):
     name = models.CharField(max_length=50)
