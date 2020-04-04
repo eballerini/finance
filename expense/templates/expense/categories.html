@@ -6,11 +6,13 @@
   {% if category_list %}
       <table>
         <tr>
+          <th>Id</th>
           <th>Name</th>
         </tr>
         {% for category in category_list %}
           <tr>
-            <td>{{ category.name }}</td>
+            <td>{{ category.id }}</td>
+            <td><a href="/expense/categories/{{category.id}}">{{ category.name }}</a></td>
           </tr>
         {% endfor %}
       </table>
@@ -18,6 +20,7 @@
       <p>No categories.</p>
   {% endif %}
   
-  <a href="/expense/">Back to main page</a>
+  <p><a href="/expense/categories/add">Add category</a></p>
+  <p><a href="/expense/">Back to main page</a></p>
 
 {% endblock %}
