@@ -13,7 +13,7 @@ def index(request):
 def accounts(request):
     accounts = Account.objects.filter(owner=request.user)
 
-    template = loader.get_template('accounts.html')
+    template = loader.get_template('expense/accounts.html')
     context = {
         'account_list': accounts,
     }
