@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Account list</h2>
+
+  {% if account_list %}
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Currency</th>
+        </tr>
+        {% for account in account_list %}
+          <tr>
+            <td>{{ account.name }}</td>
+            <td>{{ account.currency_code }}</td>
+          </tr>
+        {% endfor %}
+      </table>
+  {% else %}
+      <p>No accounts.</p>
+  {% endif %}
+
+{% endblock %}
