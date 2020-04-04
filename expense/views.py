@@ -2,8 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.template import loader
+from django.views import generic
 
-from .models import Account, Category
+from .models import Account, Category, CreditCard
 from .forms import CategoryForm
 
 @login_required
@@ -63,4 +64,11 @@ def edit_category(request, category_id):
         form = CategoryForm(initial={'name': category.name})
     
     return render(request, 'expense/category_detail.html', {'form': form})
+    
+class CreditCardListView(generic.ListView):
+    template_name = 'expense/credit_cards.html'
+    context_object_name = 'credit_card_list'
+
+    def get_queryset(self):
+        return CreditCard.objects.filter(owner=self.request.user)
     

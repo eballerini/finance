@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 @login_required
 def home(request):
-    return redirect('expense/accounts')
+    return redirect('expense/')
     
 def signup(request):
     if request.method == 'POST':

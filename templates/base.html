@@ -10,7 +10,7 @@
     <header>
       <h1>Expenses</h1>
       {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">logout</a>
+        {{ user.username }}&nbsp;<a href="{% url 'logout' %}">logout</a>
       {% else %}
         <a href="{% url 'login' %}">login</a> / <a href="{% url 'signup' %}">signup</a>
       {% endif %}

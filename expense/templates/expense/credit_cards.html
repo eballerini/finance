@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Credit card list</h2>
+
+  {% if credit_card_list %}
+      <table>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Application date</th>
+          <th>Deadline for minimum spending</th>
+          <th>Approval date</th>
+          <th>Cancellation date</th>
+          <th>Mininum spending</th>
+          <th>Signup bonus</th>
+          <th>First year fee</th>
+          <th>Annual fee</th>
+          <th>Cycle day</th>
+          <th>Earning rates</th>
+            <!--mininum_spending = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+            signup_bonus = models.IntegerField()
+            first_year_fee = models.DecimalField(max_digits=10, decimal_places=2)
+            annual_fee = models.DecimalField(max_digits=10, decimal_places=2)
+            cycle_day = models.IntegerField(null=True, blank=True)
+            earning_rates = models.CharField(max_length=200, null=True, blank=True) -->
+        </tr>
+        {% for credit_card in credit_card_list %}
+          <tr>
+            <td><a href="/expense/creditcards/{{credit_card.id}}">{{ credit_card.id }}</a></td>
+            <td>{{ credit_card.name }}</td>
+            <td>{{ credit_card.application_date }}</td>
+            <td>{{ credit_card.deadline_minimum_spending }}</td>
+            <td>{{ credit_card.approval_date }}</td>
+            <td>{{ credit_card.cancellation_date }}</td>
+            <td>{{ credit_card.mininum_spending }}</td>
+            <td>{{ credit_card.signup_bonus }}</td>
+            <td>{{ credit_card.first_year_fee }}</td>
+            <td>{{ credit_card.annual_fee }}</td>
+            <td>{{ credit_card.cycle_day }}</td>
+            <td>{{ credit_card.earning_rates }}</td>
+            
+          </tr>
+        {% endfor %}
+      </table>
+  {% else %}
+      <p>No credit cards.</p>
+  {% endif %}
+  
+  <p><a href="/expense/creditcards/add">Add credit_card</a></p>
+  <p><a href="/expense/">Back to main page</a></p>
+
+{% endblock %}

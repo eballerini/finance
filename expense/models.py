@@ -17,17 +17,20 @@ class Account(models.Model):
             
 class CreditCard(models.Model):
     name = models.CharField(max_length=50)
-    application_date = models.DateField()
-    deadline_minimum_spending = models.DateField()
-    approval_date = models.DateField(null=True)
-    cancellation_date = models.DateField(null=True)
-    mininum_spending = models.DecimalField(max_digits=10, decimal_places=2)
+    application_date = models.DateField(null=True, blank=True)
+    deadline_minimum_spending = models.DateField(null=True, blank=True)
+    approval_date = models.DateField(null=True, blank=True)
+    cancellation_date = models.DateField(null=True, blank=True)
+    mininum_spending = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     signup_bonus = models.IntegerField()
     first_year_fee = models.DecimalField(max_digits=10, decimal_places=2)
     annual_fee = models.DecimalField(max_digits=10, decimal_places=2)
-    cycle_day = models.IntegerField(null=True)
-    earning_rates = models.CharField(max_length=200, null=True)
+    cycle_day = models.IntegerField(null=True, blank=True)
+    earning_rates = models.CharField(max_length=200, null=True, blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.name + " (" + self.owner.username + ")"
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
