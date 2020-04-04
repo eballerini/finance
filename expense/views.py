@@ -5,12 +5,13 @@ from django.template import loader
 
 from .models import Account
 
-# Create your views here.
+@login_required
 def index(request):
-    return HttpResponse("Hello. You're at the expense index.")
+    return render(request, template_name='expense/index.html')
     
 @login_required
 def accounts(request):
+    # TODO move to repo layer
     accounts = Account.objects.filter(owner=request.user)
 
     template = loader.get_template('expense/accounts.html')
