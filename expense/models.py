@@ -30,6 +30,9 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     
+    def __str__(self):
+        return self.name + " (" + self.owner.username + ")"
+    
 class Expense(models.Model):
     class PaymentMethodType(models.TextChoices):
         CREDIT_CARD = 'CC', _('Credit card')
