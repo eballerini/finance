@@ -11,6 +11,9 @@ class Account(models.Model):
     name = models.CharField(max_length=100)
     currency_code = models.CharField(max_length=3, choices=Currency.choices, default=Currency.CAD)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.name + " (" + self.owner.username + ")"
             
 class CreditCard(models.Model):
     name = models.CharField(max_length=50)
