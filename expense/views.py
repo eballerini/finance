@@ -5,7 +5,7 @@ from django.template import loader
 from django.views import generic
 
 from .models import Account, Category, CreditCard
-from .forms import CategoryForm
+from .forms import CategoryForm, CreditCardForm
 
 @login_required
 def index(request):
@@ -72,3 +72,31 @@ class CreditCardListView(generic.ListView):
     def get_queryset(self):
         return CreditCard.objects.filter(owner=self.request.user)
     
+@login_required
+def add_credit_card(request):
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = CreditCardForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            CreditCard.objects.create(
+                name=form.cleaned_data["name"], 
+                application_date=form.cleaned_data["application_date"],
+                deadline_minimum_spending=form.cleaned_data["deadline_minimum_spending"],
+                approval_date=form.cleaned_data["approval_date"],
+                cancellation_date=form.cleaned_data["cancellation_date"],
+                mininum_spending=form.cleaned_data["mininum_spending"],
+                signup_bonus=form.cleaned_data["signup_bonus"],
+                first_year_fee=form.cleaned_data["first_year_fee"],
+                annual_fee=form.cleaned_data["annual_fee"],
+                cycle_day=form.cleaned_data["cycle_day"],
+                earning_rates=form.cleaned_data["earning_rates"],
+                owner=request.user
+            )
+            
+            return redirect('/expense/creditcards')
+    else:
+        form = CreditCardForm()
+        
+    return render(request, 'expense/credit_card_detail.html', {'form': form})

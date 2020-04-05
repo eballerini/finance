@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Add/edit credit card</h2>
+
+  <form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div>
+      <input type="submit" value="Submit"> 
+    </div>
+    
+  </form>
+  
+  <a href="/expense/">Back to main page</a>
+
+{% endblock %}
