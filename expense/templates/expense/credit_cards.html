@@ -23,16 +23,16 @@
           <tr>
             <td><a href="/expense/creditcards/{{credit_card.id}}">{{ credit_card.id }}</a></td>
             <td>{{ credit_card.name }}</td>
-            <td>{{ credit_card.application_date }}</td>
-            <td>{{ credit_card.deadline_minimum_spending }}</td>
-            <td>{{ credit_card.approval_date }}</td>
-            <td>{{ credit_card.cancellation_date }}</td>
-            <td>{{ credit_card.mininum_spending }}</td>
-            <td>{{ credit_card.signup_bonus }}</td>
+            <td>{{ credit_card.application_date|default_if_none:'' }}</td>
+            <td>{{ credit_card.deadline_minimum_spending|default_if_none:'' }}</td>
+            <td>{{ credit_card.approval_date|default_if_none:'' }}</td>
+            <td>{{ credit_card.cancellation_date|default_if_none:'' }}</td>
+            <td>{{ credit_card.mininum_spending|default_if_none:'' }}</td>
+            <td>{{ credit_card.signup_bonus|default_if_none:'' }}</td>
             <td>{{ credit_card.first_year_fee }}</td>
             <td>{{ credit_card.annual_fee }}</td>
-            <td>{{ credit_card.cycle_day }}</td>
-            <td>{{ credit_card.earning_rates }}</td>
+            <td>{{ credit_card.cycle_day|default_if_none:'' }}</td>
+            <td>{{ credit_card.earning_rates|default_if_none:'' }}</td>
             
           </tr>
         {% endfor %}
