@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views import generic
 
-from .models import Account, Category, CreditCard
+from .models import Account, Category, CreditCard, Expense
 from .forms import CategoryForm, CreditCardForm
+from .serializers import TransactionSerializer
+
 
 @login_required
 def index(request):
@@ -100,3 +102,17 @@ def add_credit_card(request):
         form = CreditCardForm()
         
     return render(request, 'expense/credit_card_detail.html', {'form': form})
+    
+
+
+
+
+    
+    
+# TODO add @login_required
+def transactions(request, account_id):
+    # TODO add owner
+    transactions = Expense.objects.filter(account_id=account_id)
+    serializer = TransactionSerializer(transactions, many=True)
+    
+    return JsonResponse(serializer.data, safe=False)

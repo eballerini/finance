@@ -6,11 +6,13 @@
   {% if account_list %}
       <table>
         <tr>
+          <th>Id</th>
           <th>Name</th>
           <th>Currency</th>
         </tr>
         {% for account in account_list %}
           <tr>
+            <td>{{ account.id }}</td>
             <td>{{ account.name }}</td>
             <td>{{ account.currency_code }}</td>
           </tr>
