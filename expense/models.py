@@ -39,11 +39,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
     
-class Expense(models.Model):
+class Expense(models.Model): # TODO rename to Transaction
     class PaymentMethodType(models.TextChoices):
         CREDIT_CARD = 'CC', _('Credit card')
         CASH = 'CA', _('Cash')
-        ETRANSFER = 'ET', _('E transfer')
+        ETRANSFER = 'ET', _('E-transfer')
         DIRECT_TRANSFER = 'TR', _('Direct transfer')
         CHECK = 'CK', _('Check')
         
