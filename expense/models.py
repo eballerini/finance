@@ -39,7 +39,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
     
-class Expense(models.Model): # TODO rename to Transaction
+class Transaction(models.Model):
     class PaymentMethodType(models.TextChoices):
         CREDIT_CARD = 'CC', _('Credit card')
         CASH = 'CA', _('Cash')
@@ -54,6 +54,9 @@ class Expense(models.Model): # TODO rename to Transaction
         choices=PaymentMethodType.choices,
         default=PaymentMethodType.CREDIT_CARD,
     )
-    credit_card = models.ForeignKey('CreditCard', on_delete=models.CASCADE, null=True)
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True)
+    credit_card = models.ForeignKey('CreditCard', on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
     account = models.ForeignKey('Account', on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.description

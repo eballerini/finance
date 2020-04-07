@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views import generic
 
-from .models import Account, Category, CreditCard, Expense
+from .models import Account, Category, CreditCard, Transaction
 from .forms import CategoryForm, CreditCardForm
 from .serializers import TransactionSerializer
 
@@ -112,7 +112,7 @@ def add_credit_card(request):
 # TODO add @login_required
 def transactions(request, account_id):
     # TODO add owner
-    transactions = Expense.objects.filter(account_id=account_id)
+    transactions = Transaction.objects.filter(account_id=account_id)
     serializer = TransactionSerializer(transactions, many=True)
     
     return JsonResponse(serializer.data, safe=False)
