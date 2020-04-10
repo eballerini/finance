@@ -1,12 +1,19 @@
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views import generic
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+from rest_framework.serializers import ValidationError
 
-from .models import Account, Category, CreditCard, Transaction
 from .forms import CategoryForm, CreditCardForm
-from .serializers import TransactionSerializer
+from .models import Account, Category, CreditCard, Transaction
+from .serializers import AccountSerializer, TransactionSerializer, UserSerializer, UserSerializerWithToken
 
 
 @login_required
@@ -102,17 +109,56 @@ def add_credit_card(request):
         form = CreditCardForm()
         
     return render(request, 'expense/credit_card_detail.html', {'form': form})
+
+def accounts_as_json(request):
+    # TODO move this to a middleware
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+    data = {'token': token}
+    try:
+        valid_data = VerifyJSONWebTokenSerializer().validate(data)
+        user = valid_data['user']
+        request.user = user
+    except ValidationError as v:
+        print("validation error", v)
+        
+    # TODO move to repo layer
+    accounts = Account.objects.filter(owner=request.user)
+
+    serializer = AccountSerializer(accounts, many=True)
+    
+    return JsonResponse(serializer.data, safe=False)
     
 
-
-
-
-    
-    
-# TODO add @login_required
+@login_required
 def transactions(request, account_id):
     # TODO add owner
     transactions = Transaction.objects.filter(account_id=account_id)
     serializer = TransactionSerializer(transactions, many=True)
     
     return JsonResponse(serializer.data, safe=False)
+
+
+@api_view(['GET'])
+def current_user(request):
+    """
+    Determine the current user by their token, and return their data
+    """
+    
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+
+class UserList(APIView):
+    """
+    Create a new user. It's called 'UserList' because normally we'd have a get
+    method here too, for retrieving a list of all User objects.
+    """
+
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format=None):
+        serializer = UserSerializerWithToken(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

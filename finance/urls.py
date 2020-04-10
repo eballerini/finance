@@ -18,8 +18,10 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
 from . import views as core_views
+from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
+    path('token-auth/', obtain_jwt_token),
     path('expense/', include('expense.urls')),
     path('admin/', admin.site.urls),
     url(r'^$', core_views.home, name='home'),
