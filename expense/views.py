@@ -109,6 +109,17 @@ def add_credit_card(request):
         form = CreditCardForm()
         
     return render(request, 'expense/credit_card_detail.html', {'form': form})
+    
+def _update_request_from_token(request):
+    # TODO move this to a middleware
+    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
+    data = {'token': token}
+    try:
+        valid_data = VerifyJSONWebTokenSerializer().validate(data)
+        user = valid_data['user']
+        request.user = user
+    except ValidationError as v:
+        print("validation error", v)
 
 def accounts_as_json(request):
     # TODO move this to a middleware
@@ -127,7 +138,17 @@ def accounts_as_json(request):
     serializer = AccountSerializer(accounts, many=True)
     
     return JsonResponse(serializer.data, safe=False)
+
+def transactions_for_first_account_as_json(request):
+    _update_request_from_token(request)
     
+    accounts = Account.objects.filter(owner=request.user)
+    
+    # TODO check if there are any accounts
+    transactions = Transaction.objects.filter(account_id=accounts[0].id)
+    serializer = TransactionSerializer(transactions, many=True)
+    
+    return JsonResponse(serializer.data, safe=False)    
 
 @login_required
 def transactions(request, account_id):
