@@ -145,7 +145,7 @@ def transactions_for_first_account_as_json(request):
     accounts = Account.objects.filter(owner=request.user)
     
     # TODO check if there are any accounts
-    transactions = Transaction.objects.filter(account_id=accounts[0].id)
+    transactions = Transaction.objects.filter(account_id=accounts[0].id).select_related('category')
     serializer = TransactionSerializer(transactions, many=True)
     
     return JsonResponse(serializer.data, safe=False)    
@@ -153,7 +153,7 @@ def transactions_for_first_account_as_json(request):
 @login_required
 def transactions(request, account_id):
     # TODO add owner
-    transactions = Transaction.objects.filter(account_id=account_id)
+    transactions = Transaction.objects.filter(account_id=account_id).select_related('category')
     serializer = TransactionSerializer(transactions, many=True)
     
     return JsonResponse(serializer.data, safe=False)

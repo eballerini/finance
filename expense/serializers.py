@@ -8,8 +8,9 @@ from .models import Account, Transaction
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category', 'account']
-        
+        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category', 'account_id']
+        depth = 1
+
         
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
