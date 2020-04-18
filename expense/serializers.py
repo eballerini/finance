@@ -2,16 +2,29 @@ from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 from django.contrib.auth.models import User
 
-from .models import Account, Transaction
+from .models import Account, Category, CreditCard, Transaction
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name']
+
+class CreditCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CreditCard
+        fields = ['id', 'name']
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category', 'account_id']
-        depth = 1
+        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category', 'account']
 
-        
+# this is a different serializer for the GET request because of the related objects that mess up with the POST requests
+class TransactionSerializerGet(TransactionSerializer):
+    category = CategorySerializer(required=False)
+    credit_card = CreditCardSerializer(required=False)
+
+
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account

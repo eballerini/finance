@@ -13,7 +13,7 @@ from rest_framework.serializers import ValidationError
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, TransactionSerializer, UserSerializer, UserSerializerWithToken
+from .serializers import AccountSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
 
 
 @login_required
@@ -139,16 +139,24 @@ def accounts_as_json(request):
     
     return JsonResponse(serializer.data, safe=False)
 
+@api_view(['GET', 'POST'])
 def transactions_for_first_account_as_json(request):
     _update_request_from_token(request)
-    
     accounts = Account.objects.filter(owner=request.user)
     
-    # TODO check if there are any accounts
-    transactions = Transaction.objects.filter(account_id=accounts[0].id).select_related('category')
-    serializer = TransactionSerializer(transactions, many=True)
-    
-    return JsonResponse(serializer.data, safe=False)    
+    if request.method == 'GET':
+        # TODO check if there are any accounts
+        transactions = Transaction.objects.filter(account_id=accounts[0].id)
+        serializer = TransactionSerializerGet(transactions, many=True)        
+        return JsonResponse(serializer.data, safe=False)
+        
+    elif request.method == 'POST':
+        serializer = TransactionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
 
 @login_required
 def transactions(request, account_id):
