@@ -13,7 +13,7 @@ from rest_framework.serializers import ValidationError
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
+from .serializers import AccountSerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
 
 
 @login_required
@@ -138,6 +138,11 @@ def accounts_as_json(request):
     serializer = AccountSerializer(accounts, many=True)
     
     return JsonResponse(serializer.data, safe=False)
+    
+def _get_first_account(user):
+    accounts = Account.objects.filter(owner=user)
+    # TODO check if there are any accounts
+    return accounts[0]
 
 @api_view(['GET', 'POST'])
 def transactions_for_first_account_as_json(request):
@@ -159,7 +164,16 @@ def transactions_for_first_account_as_json(request):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-
+@api_view(['GET'])
+def credit_cards_for_first_account(request):
+    _update_request_from_token(request)
+    first_account = _get_first_account(request.user)
+    
+    credit_cards = CreditCard.objects.filter(account_id=first_account.id)
+    serializer = CreditCardSerializer(credit_cards, many=True)
+    
+    return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+    
 @login_required
 def transactions(request, account_id):
     # TODO add owner

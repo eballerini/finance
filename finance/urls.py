@@ -20,6 +20,8 @@ from django.urls import include, path
 from . import views as core_views
 from rest_framework_jwt.views import obtain_jwt_token
 
+# visit http://localhost:8080/token-auth/ to get a token for a given user
+
 urlpatterns = [
     path('token-auth/', obtain_jwt_token),
     path('expense/', include('expense.urls')),
