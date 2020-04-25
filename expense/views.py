@@ -13,7 +13,7 @@ from rest_framework.serializers import ValidationError
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
 
 
 @login_required
@@ -173,6 +173,16 @@ def credit_cards_for_first_account(request):
     serializer = CreditCardSerializer(credit_cards, many=True)
     
     return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+    
+@api_view(['GET'])
+def categories_as_json(request):
+    _update_request_from_token(request)
+    first_account = _get_first_account(request.user)
+    
+    categories = Category.objects.filter(owner=request.user)
+    serializer = CategorySerializer(categories, many=True)
+    
+    return JsonResponse(serializer.data, safe=False)
     
 @login_required
 def transactions(request, account_id):

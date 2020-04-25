@@ -18,6 +18,7 @@ urlpatterns = [
     
     # TODO move api at the beginning of the URL (in front of expenses)
     path('api/accounts/', views.accounts_as_json, name='accounts_as_json'),
+    path('api/categories/', views.categories_as_json, name='categories_as_json'),
     path('api/transactions/', views.transactions_for_first_account_as_json, name='transactions_for_first_account_as_json'),
     path('api/creditcards/', views.credit_cards_for_first_account, name='credit_cards_for_first_account'),
     
