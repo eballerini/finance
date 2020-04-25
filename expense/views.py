@@ -143,18 +143,20 @@ def accounts_as_json(request):
 def transactions_for_first_account_as_json(request):
     _update_request_from_token(request)
     accounts = Account.objects.filter(owner=request.user)
+    # TODO check if there are any accounts
+    first_account = accounts[0]
     
     if request.method == 'GET':
-        # TODO check if there are any accounts
-        transactions = Transaction.objects.filter(account_id=accounts[0].id)
+        transactions = Transaction.objects.filter(account_id=first_account.id)
         serializer = TransactionSerializerGet(transactions, many=True)        
         return JsonResponse(serializer.data, safe=False)
         
     elif request.method == 'POST':
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save(account=first_account)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
 

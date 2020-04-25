@@ -17,7 +17,7 @@ class CreditCardSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category', 'account']
+        fields = ['id', 'description', 'amount', 'date_added', 'payment_method_type', 'credit_card', 'category']
 
 # this is a different serializer for the GET request because of the related objects that mess up with the POST requests
 class TransactionSerializerGet(TransactionSerializer):
