@@ -28,6 +28,7 @@ class CreditCard(models.Model):
     cycle_day = models.IntegerField(null=True, blank=True)
     earning_rates = models.CharField(max_length=200, null=True, blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    account = models.ForeignKey('Account', on_delete=models.CASCADE)
     
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
