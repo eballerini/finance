@@ -152,7 +152,7 @@ def transactions_for_first_account_as_json(request):
     first_account = accounts[0]
     
     if request.method == 'GET':
-        transactions = Transaction.objects.filter(account_id=first_account.id)
+        transactions = Transaction.objects.filter(account_id=first_account.id).order_by('date_added')
         serializer = TransactionSerializerGet(transactions, many=True)        
         return JsonResponse(serializer.data, safe=False)
         
