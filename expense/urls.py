@@ -1,11 +1,17 @@
 from django.urls import path
 
 from . import views
+from rest_framework_simplejwt import views as jwt_views
 
-from .views import current_user, UserList
+from .views import current_user, UserList, UserCreate, HelloWorldView
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('user/create/', UserCreate.as_view(), name="create_user"),
+    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override sjwt stock token
+    path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    path('hello/', HelloWorldView.as_view(), name='hello_world'),
+    
     path('current_user/', current_user),
     path('users/', UserList.as_view()),
     path('accounts/', views.accounts, name='accounts'),

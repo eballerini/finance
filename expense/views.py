@@ -8,13 +8,31 @@ from rest_framework import permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+#from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 from rest_framework.serializers import ValidationError
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer
+#, UserSerializerWithToken
 
+class HelloWorldView(APIView):
+
+    def get(self, request):
+        return Response(data={"hello":"world"}, status=status.HTTP_200_OK)
+
+class UserCreate(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format='json'):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                json = serializer.data
+                return Response(json, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 @login_required
 def index(request):
