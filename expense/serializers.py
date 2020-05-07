@@ -1,6 +1,8 @@
 from rest_framework import serializers
 #from rest_framework_jwt.settings import api_settings
 #from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 from .models import Account, Category, CreditCard, Transaction, User
 
@@ -53,3 +55,14 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        return token
