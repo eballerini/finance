@@ -3,12 +3,12 @@ from django.urls import path
 from . import views
 from rest_framework_simplejwt import views as jwt_views
 
-from .views import current_user, UserList, UserCreate, HelloWorldView, LogoutAndBlacklistRefreshTokenForUserView
+from .views import current_user, UserList, UserCreate, HelloWorldView, LogoutAndBlacklistRefreshTokenForUserView, ObtainTokenPairWithColorView, AccountsView, TransactionsView, CreditCardsView, CategoryView
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('user/create/', UserCreate.as_view(), name="create_user"),
-    path('token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_create'),  # override sjwt stock token
+    path('token/obtain/', ObtainTokenPairWithColorView.as_view(), name='token_create'),  # override sjwt stock token
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('hello/', HelloWorldView.as_view(), name='hello_world'),
     path('blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='blacklist'),
@@ -24,9 +24,8 @@ urlpatterns = [
     path('creditcards/add', views.add_credit_card, name='creditcards_add'),
     
     # TODO move api at the beginning of the URL (in front of expenses)
-    path('api/accounts/', views.accounts_as_json, name='accounts_as_json'),
-    path('api/categories/', views.categories_as_json, name='categories_as_json'),
-    path('api/transactions/', views.transactions_for_first_account_as_json, name='transactions_for_first_account_as_json'),
-    path('api/creditcards/', views.credit_cards_for_first_account, name='credit_cards_for_first_account'),
-    
+    path('api/accounts/', AccountsView.as_view(), name='account_list'),
+    path('api/transactions/', TransactionsView.as_view(), name='transaction_list'),
+    path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
+    path('api/categories/', CategoryView.as_view(), name='category_list'),
 ]
