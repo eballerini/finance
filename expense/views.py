@@ -157,6 +157,14 @@ class AccountsView(APIView):
         
 class TransactionsView(APIView):
     
+    def _get_transaction(user, transaction_id):
+        first_account = _get_first_account(user)
+        try:
+            transaction = Transaction.objects.get(id=transaction_id, account=first_account)
+        except Transaction.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return transaction
+    
     def get(self, request):
         print("getting transactions...")
         first_account = _get_first_account(request.user)
@@ -189,6 +197,13 @@ class TransactionsView(APIView):
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, transaction_id):
+        print('deleting transaction...')
+        transaction = TransactionsView._get_transaction(request.user, transaction_id)
+        transaction.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
 
 class CreditCardsView(APIView):
     
