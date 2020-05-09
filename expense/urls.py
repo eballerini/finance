@@ -26,6 +26,7 @@ urlpatterns = [
     # TODO move api at the beginning of the URL (in front of expenses)
     path('api/accounts/', AccountsView.as_view(), name='account_list'),
     path('api/transactions/', TransactionsView.as_view(), name='transaction_list'),
+    path('api/transactions/<int:transaction_id>/', TransactionsView.as_view(), name='transaction_edit'),
     path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
     path('api/categories/', CategoryView.as_view(), name='category_list'),
 ]
