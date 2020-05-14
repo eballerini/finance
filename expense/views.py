@@ -223,7 +223,7 @@ class CreditCardsForAccountView(APIView):
 class CreditCardsView(APIView):
     
     def get(self, request):
-        credit_cards = CreditCard.objects.filter(owner=request.user)
+        credit_cards = CreditCard.objects.filter(owner=request.user).order_by("application_date")
         serializer = CreditCardSerializer(credit_cards, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
         
