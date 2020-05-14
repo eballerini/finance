@@ -14,7 +14,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
 
 
 class HelloWorldView(APIView):
@@ -204,12 +204,26 @@ class TransactionsView(APIView):
         transaction.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
-
-class CreditCardsView(APIView):
+# TODO get rid of this in favour of CreditCardsForAccountView
+class CreditCardsForFirstAccountView(APIView):
     
     def get(self, request):
         first_account = _get_first_account(request.user)
         credit_cards = CreditCard.objects.filter(account_id=first_account.id)
+        serializer = CreditCardSerializerLight(credit_cards, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+class CreditCardsForAccountView(APIView):
+    
+    def get(self, request, account_id):
+        credit_cards = CreditCard.objects.filter(account_id=account_id, owner=request.user)
+        serializer = CreditCardSerializerLight(credit_cards, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+class CreditCardsView(APIView):
+    
+    def get(self, request):
+        credit_cards = CreditCard.objects.filter(owner=request.user)
         serializer = CreditCardSerializer(credit_cards, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
         

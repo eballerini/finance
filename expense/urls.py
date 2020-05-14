@@ -3,7 +3,7 @@ from django.urls import path
 from . import views
 from rest_framework_simplejwt import views as jwt_views
 
-from .views import current_user, UserList, UserCreate, HelloWorldView, LogoutAndBlacklistRefreshTokenForUserView, ObtainTokenPairWithColorView, AccountsView, TransactionsView, CreditCardsView, CategoryView
+from .views import current_user, UserList, UserCreate, HelloWorldView, LogoutAndBlacklistRefreshTokenForUserView, ObtainTokenPairWithColorView, AccountsView, TransactionsView, CreditCardsForFirstAccountView, CategoryView, CreditCardsForAccountView, CreditCardsView
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -25,8 +25,11 @@ urlpatterns = [
     
     # TODO move api at the beginning of the URL (in front of expenses)
     path('api/accounts/', AccountsView.as_view(), name='account_list'),
+    path('api/accounts/<int:account_id>/creditcards/', CreditCardsForAccountView.as_view(), name='credit_card_for_account_list'),
     path('api/transactions/', TransactionsView.as_view(), name='transaction_list'),
     path('api/transactions/<int:transaction_id>/', TransactionsView.as_view(), name='transaction_edit'),
+    # TODO remove creditcardsforfirstaccount. Use api/accounts/<int:account_id>/creditcards/ instead
+    path('api/creditcardsforfirstaccount/', CreditCardsForFirstAccountView.as_view(), name='credit_card_for_first_account_list'),
     path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
     path('api/categories/', CategoryView.as_view(), name='category_list'),
 ]

@@ -6,15 +6,27 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Account, Category, CreditCard, Transaction, User
 
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['id', 'name', 'currency_code']
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name']
 
-class CreditCardSerializer(serializers.ModelSerializer):
+class CreditCardSerializerLight(serializers.ModelSerializer):
     class Meta:
         model = CreditCard
         fields = ['id', 'name']
+        
+class CreditCardSerializer(serializers.ModelSerializer):
+    account = AccountSerializer()
+    
+    class Meta:
+        model = CreditCard
+        fields = ['id', 'name', 'application_date', 'deadline_minimum_spending', 'approval_date', 'cancellation_date', 'mininum_spending', 'signup_bonus', 'first_year_fee', 'annual_fee', 'cycle_day', 'earning_rates', 'account']
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,13 +36,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 # this is a different serializer for the GET request because of the related objects that mess up with the POST requests
 class TransactionSerializerGet(TransactionSerializer):
     category = CategorySerializer(required=False)
-    credit_card = CreditCardSerializer(required=False)
-
-
-class AccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = ['id', 'name', 'currency_code']
+    credit_card = CreditCardSerializerLight(required=False)
 
 
 class UserSerializer(serializers.ModelSerializer):
