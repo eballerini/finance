@@ -8,13 +8,50 @@ from rest_framework import permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 from rest_framework.serializers import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, UserSerializerWithToken
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
 
+
+class HelloWorldView(APIView):
+
+    def get(self, request):
+        return Response(data={"hello":"world"}, status=status.HTTP_200_OK)
+
+class UserCreate(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def post(self, request, format='json'):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                json = serializer.data
+                return Response(json, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class LogoutAndBlacklistRefreshTokenForUserView(APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = ()
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class ObtainTokenPairWithColorView(TokenObtainPairView):
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = MyTokenObtainPairSerializer
+        
 
 @login_required
 def index(request):
@@ -109,80 +146,99 @@ def add_credit_card(request):
         form = CreditCardForm()
         
     return render(request, 'expense/credit_card_detail.html', {'form': form})
-    
-def _update_request_from_token(request):
-    # TODO move this to a middleware
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    data = {'token': token}
-    try:
-        valid_data = VerifyJSONWebTokenSerializer().validate(data)
-        user = valid_data['user']
-        request.user = user
-    except ValidationError as v:
-        print("validation error", v)
 
-def accounts_as_json(request):
-    # TODO move this to a middleware
-    token = request.META.get('HTTP_AUTHORIZATION', " ").split(' ')[1]
-    data = {'token': token}
-    try:
-        valid_data = VerifyJSONWebTokenSerializer().validate(data)
-        user = valid_data['user']
-        request.user = user
-    except ValidationError as v:
-        print("validation error", v)
+class AccountsView(APIView):
+
+    def get(self, request):
+        accounts = Account.objects.filter(owner=request.user)
+        serializer = AccountSerializer(accounts, many=True)
         
-    # TODO move to repo layer
-    accounts = Account.objects.filter(owner=request.user)
-
-    serializer = AccountSerializer(accounts, many=True)
+        return JsonResponse(serializer.data, safe=False)
+        
+class TransactionsView(APIView):
     
-    return JsonResponse(serializer.data, safe=False)
+    def _get_transaction(user, transaction_id):
+        first_account = _get_first_account(user)
+        try:
+            transaction = Transaction.objects.get(id=transaction_id, account=first_account)
+        except Transaction.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        return transaction
     
-def _get_first_account(user):
-    accounts = Account.objects.filter(owner=user)
-    # TODO check if there are any accounts
-    return accounts[0]
-
-@api_view(['GET', 'POST'])
-def transactions_for_first_account_as_json(request):
-    _update_request_from_token(request)
-    accounts = Account.objects.filter(owner=request.user)
-    # TODO check if there are any accounts
-    first_account = accounts[0]
-    
-    if request.method == 'GET':
+    def get(self, request):
+        print("getting transactions...")
+        first_account = _get_first_account(request.user)
+        
         transactions = Transaction.objects.filter(account_id=first_account.id).order_by('date_added')
         serializer = TransactionSerializerGet(transactions, many=True)        
         return JsonResponse(serializer.data, safe=False)
         
-    elif request.method == 'POST':
+    def post(self, request):
+        print("creating transaction...")
+        first_account = _get_first_account(request.user)
+        
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(account=first_account)
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
-@api_view(['GET'])
-def credit_cards_for_first_account(request):
-    _update_request_from_token(request)
-    first_account = _get_first_account(request.user)
+        
+    def put(self, request, transaction_id):
+        print('updating transaction...')
+        first_account = _get_first_account(request.user)
+        
+        # TODO move this to repo
+        transaction = Transaction.objects.get(id=transaction_id, account=first_account)
+        
+        serializer = TransactionSerializer(transaction, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save(account=first_account)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, transaction_id):
+        print('deleting transaction...')
+        transaction = TransactionsView._get_transaction(request.user, transaction_id)
+        transaction.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+# TODO get rid of this in favour of CreditCardsForAccountView
+class CreditCardsForFirstAccountView(APIView):
     
-    credit_cards = CreditCard.objects.filter(account_id=first_account.id)
-    serializer = CreditCardSerializer(credit_cards, many=True)
+    def get(self, request):
+        first_account = _get_first_account(request.user)
+        credit_cards = CreditCard.objects.filter(account_id=first_account.id)
+        serializer = CreditCardSerializerLight(credit_cards, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+class CreditCardsForAccountView(APIView):
     
-    return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+    def get(self, request, account_id):
+        credit_cards = CreditCard.objects.filter(account_id=account_id, owner=request.user)
+        serializer = CreditCardSerializerLight(credit_cards, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+class CreditCardsView(APIView):
     
-@api_view(['GET'])
-def categories_as_json(request):
-    _update_request_from_token(request)
-    first_account = _get_first_account(request.user)
+    def get(self, request):
+        credit_cards = CreditCard.objects.filter(owner=request.user).order_by("application_date")
+        serializer = CreditCardSerializer(credit_cards, many=True)
+        return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+class CategoryView(APIView):
     
-    categories = Category.objects.filter(owner=request.user)
-    serializer = CategorySerializer(categories, many=True)
+    def get(self, request):
+        first_account = _get_first_account(request.user)        
+        categories = Category.objects.filter(owner=request.user)
+        serializer = CategorySerializer(categories, many=True)
+        return JsonResponse(serializer.data, safe=False)
     
-    return JsonResponse(serializer.data, safe=False)
+def _get_first_account(user):
+    accounts = Account.objects.filter(owner=user)
+    # TODO check if there are any accounts
+    return accounts[0]
     
 @login_required
 def transactions(request, account_id):

@@ -1,18 +1,32 @@
 from rest_framework import serializers
-from rest_framework_jwt.settings import api_settings
-from django.contrib.auth.models import User
+#from rest_framework_jwt.settings import api_settings
+#from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Account, Category, CreditCard, Transaction
+
+from .models import Account, Category, CreditCard, Transaction, User
+
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['id', 'name', 'currency_code']
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name']
 
-class CreditCardSerializer(serializers.ModelSerializer):
+class CreditCardSerializerLight(serializers.ModelSerializer):
     class Meta:
         model = CreditCard
         fields = ['id', 'name']
+        
+class CreditCardSerializer(serializers.ModelSerializer):
+    account = AccountSerializer()
+    
+    class Meta:
+        model = CreditCard
+        fields = ['id', 'name', 'application_date', 'deadline_minimum_spending', 'approval_date', 'cancellation_date', 'mininum_spending', 'signup_bonus', 'first_year_fee', 'annual_fee', 'cycle_day', 'earning_rates', 'account']
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,43 +36,39 @@ class TransactionSerializer(serializers.ModelSerializer):
 # this is a different serializer for the GET request because of the related objects that mess up with the POST requests
 class TransactionSerializerGet(TransactionSerializer):
     category = CategorySerializer(required=False)
-    credit_card = CreditCardSerializer(required=False)
-
-
-class AccountSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = ['id', 'name', 'currency_code']
+    credit_card = CreditCardSerializerLight(required=False)
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Currently unused in preference of the below.
+    """
+    email = serializers.EmailField(
+        required=True
+    )
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ('username',)
-
-
-class UserSerializerWithToken(serializers.ModelSerializer):
-
-    token = serializers.SerializerMethodField()
-    password = serializers.CharField(write_only=True)
-
-    def get_token(self, obj):
-        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-
-        payload = jwt_payload_handler(obj)
-        token = jwt_encode_handler(payload)
-        return token
+        fields = ('email', 'username', 'password')
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
+        instance = self.Meta.model(**validated_data)  # as long as the fields are the same, we can just use this
         if password is not None:
             instance.set_password(password)
         instance.save()
         return instance
 
-    class Meta:
-        model = User
-        fields = ('token', 'username', 'password')
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+    def get_token(cls, user):
+        token = super(MyTokenObtainPairSerializer, cls).get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        return token
