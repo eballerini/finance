@@ -20,10 +20,16 @@ class CreditCardSerializerLight(serializers.ModelSerializer):
     class Meta:
         model = CreditCard
         fields = ['id', 'name']
-        
+
+# TODO merge these 2 serializers
 class CreditCardSerializer(serializers.ModelSerializer):
     account = AccountSerializer()
     
+    class Meta:
+        model = CreditCard
+        fields = ['id', 'name', 'application_date', 'deadline_minimum_spending', 'approval_date', 'cancellation_date', 'mininum_spending', 'signup_bonus', 'first_year_fee', 'annual_fee', 'cycle_day', 'earning_rates', 'account']
+        
+class CreditCardSerializerPost(serializers.ModelSerializer):    
     class Meta:
         model = CreditCard
         fields = ['id', 'name', 'application_date', 'deadline_minimum_spending', 'approval_date', 'cancellation_date', 'mininum_spending', 'signup_bonus', 'first_year_fee', 'annual_fee', 'cycle_day', 'earning_rates', 'account']

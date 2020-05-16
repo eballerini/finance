@@ -26,6 +26,7 @@ class CreditCard(models.Model):
     deadline_minimum_spending = models.DateField(null=True, blank=True)
     approval_date = models.DateField(null=True, blank=True)
     cancellation_date = models.DateField(null=True, blank=True)
+    # TODO fix typo
     mininum_spending = models.IntegerField(null=True, blank=True)
     signup_bonus = models.IntegerField(null=True, blank=True)
     first_year_fee = models.DecimalField(max_digits=10, decimal_places=2)

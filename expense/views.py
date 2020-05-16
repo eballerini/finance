@@ -14,7 +14,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, CreditCardSerializerPost, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
 
 
 class HelloWorldView(APIView):
@@ -226,6 +226,18 @@ class CreditCardsView(APIView):
         credit_cards = CreditCard.objects.filter(owner=request.user).order_by("application_date")
         serializer = CreditCardSerializer(credit_cards, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
+        
+    def post(self, request):
+        print("creating credit card...")
+        
+        serializer = CreditCardSerializerPost(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class CategoryView(APIView):
     
