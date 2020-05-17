@@ -132,7 +132,7 @@ def add_credit_card(request):
                 deadline_minimum_spending=form.cleaned_data["deadline_minimum_spending"],
                 approval_date=form.cleaned_data["approval_date"],
                 cancellation_date=form.cleaned_data["cancellation_date"],
-                mininum_spending=form.cleaned_data["mininum_spending"],
+                minimum_spending=form.cleaned_data["minimum_spending"],
                 signup_bonus=form.cleaned_data["signup_bonus"],
                 first_year_fee=form.cleaned_data["first_year_fee"],
                 annual_fee=form.cleaned_data["annual_fee"],

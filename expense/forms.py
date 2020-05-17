@@ -11,7 +11,7 @@ class CreditCardForm(forms.Form):
     deadline_minimum_spending = forms.DateField(required=False)
     approval_date = forms.DateField(required=False)
     cancellation_date = forms.DateField(required=False)
-    mininum_spending = forms.IntegerField(required=False)
+    minimum_spending = forms.IntegerField(required=False)
     signup_bonus = forms.IntegerField(required=False)
     first_year_fee = forms.DecimalField(max_digits=10, decimal_places=2)
     annual_fee = forms.DecimalField(max_digits=10, decimal_places=2)
