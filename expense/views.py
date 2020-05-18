@@ -239,6 +239,20 @@ class CreditCardsView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+    def put(self, request, credit_card_id):
+        print('updating credit card...')
+        print(request.data)
+        
+        # TODO move this to repo
+        credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
+        
+        serializer = CreditCardSerializerPost(credit_card, data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class CategoryView(APIView):
     
     def get(self, request):

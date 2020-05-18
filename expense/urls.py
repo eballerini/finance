@@ -31,5 +31,6 @@ urlpatterns = [
     # TODO remove creditcardsforfirstaccount. Use api/accounts/<int:account_id>/creditcards/ instead
     path('api/creditcardsforfirstaccount/', CreditCardsForFirstAccountView.as_view(), name='credit_card_for_first_account_list'),
     path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
+    path('api/creditcards/<int:credit_card_id>/', CreditCardsView.as_view(), name='credit_card_edit'),
     path('api/categories/', CategoryView.as_view(), name='category_list'),
 ]
