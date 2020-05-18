@@ -253,6 +253,12 @@ class CreditCardsView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+    def delete(self, request, credit_card_id):
+        print('deleting credit card...')
+        credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
+        credit_card.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
 class CategoryView(APIView):
     
     def get(self, request):
