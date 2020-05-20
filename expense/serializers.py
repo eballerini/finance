@@ -33,6 +33,10 @@ class CreditCardSerializerPost(serializers.ModelSerializer):
     class Meta:
         model = CreditCard
         fields = ['id', 'name', 'application_date', 'deadline_minimum_spending', 'approval_date', 'cancellation_date', 'minimum_spending', 'signup_bonus', 'first_year_fee', 'annual_fee', 'cycle_day', 'earning_rates', 'account']
+        
+class DashboardSerializer(serializers.Serializer):
+    num_credit_cards_opened = serializers.IntegerField()
+    first_year_fees = serializers.IntegerField()
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:

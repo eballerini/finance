@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
@@ -14,7 +16,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, CreditCardSerializerPost, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
+from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, CreditCardSerializerPost, DashboardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
 
 
 class HelloWorldView(APIView):
@@ -220,6 +222,26 @@ class CreditCardsForAccountView(APIView):
         serializer = CreditCardSerializerLight(credit_cards, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
         
+class DashboardView(APIView):
+
+    def get(self, request):
+        today = date.today()
+        one_year_ago = today - timedelta(days=365)
+        credit_cards = CreditCard.objects.filter(owner=request.user, application_date__gte=one_year_ago)
+        num_credit_cards_opened = credit_cards.count()
+        first_year_fees = 0
+        for credit_card in credit_cards:
+            first_year_fees += credit_card.first_year_fee
+
+        serializer = DashboardSerializer(data={
+            'num_credit_cards_opened': num_credit_cards_opened,
+            'first_year_fees': first_year_fees,
+        })
+        if serializer.is_valid():
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class CreditCardsView(APIView):
     
     def get(self, request):
