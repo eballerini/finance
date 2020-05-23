@@ -289,6 +289,18 @@ class CategoryView(APIView):
         categories = Category.objects.filter(owner=request.user).order_by('name')
         serializer = CategorySerializer(categories, many=True)
         return JsonResponse(serializer.data, safe=False)
+        
+    def post(self, request):
+        print("creating category...")
+        
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 def _get_first_account(user):
     accounts = Account.objects.filter(owner=user)
