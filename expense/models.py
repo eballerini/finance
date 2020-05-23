@@ -44,6 +44,9 @@ class Category(models.Model):
     
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
+        
+    class Meta:
+        verbose_name_plural = "categories"
     
 class Transaction(models.Model):
     class PaymentMethodType(models.TextChoices):

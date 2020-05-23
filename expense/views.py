@@ -231,6 +231,7 @@ class DashboardView(APIView):
         num_credit_cards_opened = credit_cards.count()
         credit_card_fees = [credit_card.first_year_fee for credit_card in credit_cards]
         first_year_fees = sum(credit_card_fees)
+        
         last_approval_date = credit_cards.last().approval_date
 
         serializer = DashboardSerializer(data={
@@ -285,8 +286,7 @@ class CreditCardsView(APIView):
 class CategoryView(APIView):
     
     def get(self, request):
-        first_account = _get_first_account(request.user)        
-        categories = Category.objects.filter(owner=request.user)
+        categories = Category.objects.filter(owner=request.user).order_by('name')
         serializer = CategorySerializer(categories, many=True)
         return JsonResponse(serializer.data, safe=False)
     
