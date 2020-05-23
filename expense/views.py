@@ -227,15 +227,16 @@ class DashboardView(APIView):
     def get(self, request):
         today = date.today()
         one_year_ago = today - timedelta(days=365)
-        credit_cards = CreditCard.objects.filter(owner=request.user, application_date__gte=one_year_ago)
+        credit_cards = CreditCard.objects.filter(owner=request.user, application_date__gte=one_year_ago).order_by('approval_date')
         num_credit_cards_opened = credit_cards.count()
-        first_year_fees = 0
-        for credit_card in credit_cards:
-            first_year_fees += credit_card.first_year_fee
+        credit_card_fees = [credit_card.first_year_fee for credit_card in credit_cards]
+        first_year_fees = sum(credit_card_fees)
+        last_approval_date = credit_cards.last().approval_date
 
         serializer = DashboardSerializer(data={
             'num_credit_cards_opened': num_credit_cards_opened,
             'first_year_fees': first_year_fees,
+            'last_approval_date': last_approval_date,
         })
         if serializer.is_valid():
             return JsonResponse(serializer.data, status=status.HTTP_200_OK)
