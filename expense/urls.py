@@ -33,5 +33,6 @@ urlpatterns = [
     path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
     path('api/creditcards/<int:credit_card_id>/', CreditCardsView.as_view(), name='credit_card_edit'),
     path('api/categories/', CategoryView.as_view(), name='category_list'),
+    path('api/categories/<int:category_id>/', CategoryView.as_view(), name='category_edit'),
     path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
 ]

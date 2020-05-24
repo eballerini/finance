@@ -301,6 +301,20 @@ class CategoryView(APIView):
             print(serializer.errors)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request, category_id):
+        print('updating category...')
+        print(request.data)
+        
+        # TODO move this to repo
+        category = Category.objects.get(id=category_id, owner=request.user)
+        
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 def _get_first_account(user):
     accounts = Account.objects.filter(owner=user)
