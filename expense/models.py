@@ -15,7 +15,7 @@ class Account(models.Model):
         
     name = models.CharField(max_length=100)
     currency_code = models.CharField(max_length=3, choices=Currency.choices, default=Currency.CAD)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
@@ -32,15 +32,15 @@ class CreditCard(models.Model):
     annual_fee = models.DecimalField(max_digits=10, decimal_places=2)
     cycle_day = models.IntegerField(null=True, blank=True)
     earning_rates = models.CharField(max_length=200, null=True, blank=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    account = models.ForeignKey('Account', on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
     
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     
     def __str__(self):
         return self.name + " (" + self.owner.username + ")"
@@ -63,9 +63,9 @@ class Transaction(models.Model):
         choices=PaymentMethodType.choices,
         default=PaymentMethodType.CREDIT_CARD,
     )
-    credit_card = models.ForeignKey('CreditCard', on_delete=models.CASCADE, null=True, blank=True)
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
-    account = models.ForeignKey('Account', on_delete=models.CASCADE)
+    credit_card = models.ForeignKey('CreditCard', on_delete=models.PROTECT, null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, blank=True)
+    account = models.ForeignKey('Account', on_delete=models.PROTECT)
     
     def __str__(self):
         return self.description
