@@ -315,6 +315,12 @@ class CategoryView(APIView):
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, category_id):
+        print('deleting category...')
+        category = Category.objects.get(id=category_id, owner=request.user)
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
 def _get_first_account(user):
     accounts = Account.objects.filter(owner=user)
