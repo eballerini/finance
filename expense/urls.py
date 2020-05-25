@@ -3,7 +3,20 @@ from django.urls import path
 from . import views
 from rest_framework_simplejwt import views as jwt_views
 
-from .views import current_user, UserList, UserCreate, HelloWorldView, LogoutAndBlacklistRefreshTokenForUserView, ObtainTokenPairWithColorView, AccountsView, TransactionsView, CreditCardsForFirstAccountView, CategoryView, CreditCardsForAccountView, CreditCardsView, DashboardView
+from .views import (
+    current_user, 
+    UserList, 
+    UserCreate, 
+    HelloWorldView, 
+    LogoutAndBlacklistRefreshTokenForUserView, 
+    ObtainTokenPairWithColorView, 
+    AccountsView, 
+    TransactionsView, 
+    CategoryView, 
+    CreditCardsForAccountView, 
+    CreditCardsView, 
+    DashboardView,
+)
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -28,8 +41,6 @@ urlpatterns = [
     path('api/accounts/<int:account_id>/creditcards/', CreditCardsForAccountView.as_view(), name='credit_card_for_account_list'),
     path('api/accounts/<int:account_id>/transactions/', TransactionsView.as_view(), name='transactions_for_account_list'),
     path('api/accounts/<int:account_id>/transactions/<int:transaction_id>/', TransactionsView.as_view(), name='transactions_for_account_edit'),
-    # TODO remove creditcardsforfirstaccount. Use api/accounts/<int:account_id>/creditcards/ instead
-    path('api/creditcardsforfirstaccount/', CreditCardsForFirstAccountView.as_view(), name='credit_card_for_first_account_list'),
     path('api/creditcards/', CreditCardsView.as_view(), name='credit_card_list'),
     path('api/creditcards/<int:credit_card_id>/', CreditCardsView.as_view(), name='credit_card_edit'),
     path('api/categories/', CategoryView.as_view(), name='category_list'),
