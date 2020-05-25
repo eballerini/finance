@@ -166,41 +166,40 @@ class TransactionsView(APIView):
         except Transaction.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         return transaction
-    
-    def get(self, request):
-        print("getting transactions...")
-        first_account = _get_first_account(request.user)
         
-        transactions = Transaction.objects.filter(account_id=first_account.id).order_by('date_added')
+    def get(self, request, account_id):
+        print("getting transactions for account " + str(account_id))
+        
+        transactions = Transaction.objects.filter(account_id=account_id).order_by('date_added')
         serializer = TransactionSerializerGet(transactions, many=True)        
         return JsonResponse(serializer.data, safe=False)
         
-    def post(self, request):
+    def post(self, request, account_id):
         print("creating transaction...")
-        first_account = _get_first_account(request.user)
+        account = _get_account(request.user, account_id)
         
         serializer = TransactionSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(account=first_account)
+            serializer.save(account=account)
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    def put(self, request, transaction_id):
+    def put(self, request, account_id, transaction_id):
         print('updating transaction...')
-        first_account = _get_first_account(request.user)
+        account = _get_account(request.user, account_id)
         
         # TODO move this to repo
-        transaction = Transaction.objects.get(id=transaction_id, account=first_account)
+        transaction = Transaction.objects.get(id=transaction_id, account=account)
         
         serializer = TransactionSerializer(transaction, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(account=first_account)
+            serializer.save(account=account)
             return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, request, transaction_id):
+    def delete(self, request, account_id, transaction_id):
         print('deleting transaction...')
         transaction = TransactionsView._get_transaction(request.user, transaction_id)
         transaction.delete()
@@ -326,6 +325,10 @@ def _get_first_account(user):
     accounts = Account.objects.filter(owner=user)
     # TODO check if there are any accounts
     return accounts[0]
+    
+def _get_account(user, account_id):
+    account = Account.objects.get(owner=user, id=account_id)
+    return account
     
 @login_required
 def transactions(request, account_id):
