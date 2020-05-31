@@ -4,18 +4,19 @@ from . import views
 from rest_framework_simplejwt import views as jwt_views
 
 from .views import (
-    current_user, 
-    UserList, 
-    UserCreate, 
-    HelloWorldView, 
-    LogoutAndBlacklistRefreshTokenForUserView, 
-    ObtainTokenPairWithColorView, 
     AccountsView, 
-    TransactionsView, 
     CategoryView, 
     CreditCardsForAccountView, 
     CreditCardsView, 
+    current_user, 
     DashboardView,
+    HelloWorldView, 
+    LogoutAndBlacklistRefreshTokenForUserView, 
+    ObtainTokenPairWithColorView, 
+    TransactionsUploadView,
+    TransactionsView, 
+    UserCreate, 
+    UserList,
 )
 
 urlpatterns = [
@@ -46,4 +47,5 @@ urlpatterns = [
     path('api/categories/', CategoryView.as_view(), name='category_list'),
     path('api/categories/<int:category_id>/', CategoryView.as_view(), name='category_edit'),
     path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('api/upload/', TransactionsUploadView.as_view(), name='transactions_upload'),
 ]

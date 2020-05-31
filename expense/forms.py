@@ -17,3 +17,8 @@ class CreditCardForm(forms.Form):
     annual_fee = forms.DecimalField(max_digits=10, decimal_places=2)
     cycle_day = forms.IntegerField(required=False)
     earning_rates = forms.CharField(max_length=200, required=False)
+
+
+class UploadFileForm(forms.Form):
+    credit_card_id = forms.IntegerField()
+    file = forms.FileField()

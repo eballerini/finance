@@ -1,5 +1,6 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
+from .forms import UploadFileForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
@@ -17,7 +18,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .forms import CategoryForm, CreditCardForm
 from .models import Account, Category, CreditCard, Transaction
 from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, CreditCardSerializerPost, DashboardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
-
+from .repositories import TransactionRepository
 
 class HelloWorldView(APIView):
 
@@ -237,7 +238,10 @@ class DashboardView(APIView):
 class CreditCardsView(APIView):
     
     def get(self, request):
-        credit_cards = CreditCard.objects.filter(owner=request.user).order_by("application_date")
+        print("loading credit cards...")
+        sort = request.GET.get('sort')
+        order_by = "name" if sort == "name" else "application_date"
+        credit_cards = CreditCard.objects.filter(owner=request.user).order_by(order_by)
         serializer = CreditCardSerializer(credit_cards, many=True)
         return JsonResponse(serializer.data, safe=False, status=status.HTTP_200_OK)
         
@@ -311,6 +315,82 @@ class CategoryView(APIView):
         category = Category.objects.get(id=category_id, owner=request.user)
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+        
+def handle_uploaded_file(credit_card_id, file, credit_card):
+    print('credit_card_id: ' + credit_card_id)
+    # TODO move this to repo
+    
+    # print('file: ' + file)
+    # with open(file, 'wb+') as destination:
+    # for chunk in file.chunks():
+    #     # print(chunk)
+    #     transactions = chunk.split("\r\n")
+    #     for transaction in transactions:
+    #         print(transaction)
+    transactions = []
+    errors = None
+    for line_as_byte in file:
+        line = str(line_as_byte, 'utf-8')
+        print("processing: " + line)
+        parts = line.split(",")
+        # print("parts")
+        # for part in parts:
+        #     print(part)
+        if parts[2] == "":
+            print("this is not a debit")
+            continue
+
+        try:
+            formatted_date = datetime.strptime(parts[0], '%m/%d/%Y').strftime('%Y-%m-%d')
+        except ValueError as e:
+            print(e)
+            errors = {'date': str(e)}
+            break
+            
+        data = {
+            'description': parts[1],
+            'amount': parts[2],
+            'date_added': formatted_date,
+            'payment_method_type': 'CC',
+            'credit_card': credit_card_id,
+        }
+        serializer = TransactionSerializer(data=data)
+        if serializer.is_valid():
+            print("data is valid")
+            transaction_data = serializer.validated_data
+            transaction_data['account_id'] = credit_card.account_id
+            transactions.append(transaction_data)
+        else:
+            print("data is invalid")
+            print(serializer.errors)
+        
+        # print("end of parts")
+        
+    if len(transactions) > 0:
+        print(f"saving {len(transactions)} transactions")
+        repository = TransactionRepository()
+        repository.create_bulk(transactions)
+    else:
+        print("no transactios to save")
+        
+    return {}, errors
+        
+        
+class TransactionsUploadView(APIView):
+    
+    def post(self, request):
+        print(request.FILES)
+        print(request.data)
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            credit_card_id = request.data.get('credit_card_id')
+            credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
+            data, errors = handle_uploaded_file(credit_card_id, request.FILES['file'], credit_card)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse(data, status=status.HTTP_201_CREATED)
+            
     
 def _get_first_account(user):
     accounts = Account.objects.filter(owner=user)
