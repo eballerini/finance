@@ -66,6 +66,12 @@ class Transaction(models.Model):
     credit_card = models.ForeignKey('CreditCard', on_delete=models.PROTECT, null=True, blank=True)
     category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, blank=True)
     account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    transaction_import = models.ForeignKey('TransactionImport', on_delete=models.PROTECT, null=True, blank=True)
     
     def __str__(self):
         return self.description
+        
+class TransactionImport(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
+    filename = models.CharField(max_length=200)
+    credit_card = models.ForeignKey('CreditCard', on_delete=models.PROTECT)

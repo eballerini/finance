@@ -319,14 +319,6 @@ class CategoryView(APIView):
 def handle_uploaded_file(credit_card_id, file, credit_card):
     print('credit_card_id: ' + credit_card_id)
     # TODO move this to repo
-    
-    # print('file: ' + file)
-    # with open(file, 'wb+') as destination:
-    # for chunk in file.chunks():
-    #     # print(chunk)
-    #     transactions = chunk.split("\r\n")
-    #     for transaction in transactions:
-    #         print(transaction)
     transactions = []
     errors = None
     for line_as_byte in file:
