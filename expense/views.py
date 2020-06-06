@@ -1,24 +1,28 @@
 from datetime import date, datetime, timedelta
 
-from .forms import UploadFileForm
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.views import generic
 from rest_framework import permissions, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.serializers import ValidationError
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .forms import CategoryForm, CreditCardForm
+from .forms import CategoryForm, CreditCardForm, UploadFileForm
 from .models import Account, Category, CreditCard, Transaction
-from .serializers import AccountSerializer, CategorySerializer, CreditCardSerializer, CreditCardSerializerLight, CreditCardSerializerPost, DashboardSerializer, TransactionSerializer, TransactionSerializerGet, UserSerializer, MyTokenObtainPairSerializer
-from .repositories import TransactionRepository
+from .serializers import (AccountSerializer, CategorySerializer,
+                          CreditCardSerializer, CreditCardSerializerLight,
+                          CreditCardSerializerPost, DashboardSerializer,
+                          MyTokenObtainPairSerializer, TransactionSerializer,
+                          TransactionSerializerGet, UserSerializer)
+from .services import TransactionImportService
+
 
 class HelloWorldView(APIView):
 
@@ -318,6 +322,7 @@ class CategoryView(APIView):
         
 def handle_uploaded_file(credit_card_id, file, credit_card):
     print('credit_card_id: ' + credit_card_id)
+    print("filename: " + file.name)
     # TODO move this to repo
     transactions = []
     errors = None
@@ -360,8 +365,8 @@ def handle_uploaded_file(credit_card_id, file, credit_card):
         
     if len(transactions) > 0:
         print(f"saving {len(transactions)} transactions")
-        repository = TransactionRepository()
-        repository.create_bulk(transactions)
+        service = TransactionImportService()
+        service.import_transactions(transactions_data=transactions, filename=file.name, credit_card_id=credit_card_id)
     else:
         print("no transactios to save")
         
