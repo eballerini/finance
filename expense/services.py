@@ -1,4 +1,5 @@
-from .repositories import TransactionRepository, TransactionImportRepository
+from .repositories import TransactionImportRepository, TransactionRepository
+
 
 class TransactionImportService:
     

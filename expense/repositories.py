@@ -1,5 +1,6 @@
 from .models import Transaction, TransactionImport
 
+
 class TransactionRepository:
     
     def create_bulk(self, transactions_data):

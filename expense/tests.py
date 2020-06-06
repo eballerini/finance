@@ -1,9 +1,11 @@
 from datetime import date
+
 from django.test import TestCase
 
-from .factories import UserFactory, AccountFactory, CreditCardFactory
+from .factories import AccountFactory, CreditCardFactory, UserFactory
 from .models import Transaction, TransactionImport
 from .services import TransactionImportService
+
 
 class TransactionImportServiceIntegrationTest(TestCase):
     

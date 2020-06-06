@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 # Register your models here.
-from .models import Account, CreditCard, Category, Transaction, User
+from .models import Account, Category, CreditCard, Transaction, User
 
 admin.site.register(Account)
 admin.site.register(CreditCard)

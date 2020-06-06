@@ -1,23 +1,12 @@
 from django.urls import path
-
-from . import views
 from rest_framework_simplejwt import views as jwt_views
 
-from .views import (
-    AccountsView, 
-    CategoryView, 
-    CreditCardsForAccountView, 
-    CreditCardsView, 
-    current_user, 
-    DashboardView,
-    HelloWorldView, 
-    LogoutAndBlacklistRefreshTokenForUserView, 
-    ObtainTokenPairWithColorView, 
-    TransactionsUploadView,
-    TransactionsView, 
-    UserCreate, 
-    UserList,
-)
+from . import views
+from .views import (AccountsView, CategoryView, CreditCardsForAccountView,
+                    CreditCardsView, DashboardView, HelloWorldView,
+                    LogoutAndBlacklistRefreshTokenForUserView,
+                    ObtainTokenPairWithColorView, TransactionsUploadView,
+                    TransactionsView, UserCreate, UserList, current_user)
 
 urlpatterns = [
     path('', views.index, name='index'),
