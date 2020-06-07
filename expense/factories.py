@@ -33,5 +33,3 @@ class CreditCardFactory(DjangoModelFactory):
     annual_fee = 120
     cycle_day = 1
     earning_rates = '1.5 point per dollar'
-    # owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    # account = models.ForeignKey('Account', on_delete=models.PROTECT)

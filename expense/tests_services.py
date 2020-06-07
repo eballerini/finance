@@ -8,7 +8,7 @@ from .services import TransactionImportService
 
 
 class TransactionImportServiceIntegrationTest(TestCase):
-    
+
     def setUp(self):
         super().setUp()
         self.user = UserFactory()
@@ -25,16 +25,24 @@ class TransactionImportServiceIntegrationTest(TestCase):
             }
         ]
         self.sut = TransactionImportService()
-    
+
     def test_import_transactions__success(self):
         self.sut.import_transactions(transactions_data=self.transactions_data, filename='sample.txt', credit_card_id=self.credit_card.id)
-        
+
         transactions = Transaction.objects.filter(account_id=self.account.id)
         self.assertEqual(1, len(transactions))
         self.assertIsNotNone(transactions[0].transaction_import_id)
-        
+
         imports = TransactionImport.objects.filter(credit_card_id=self.credit_card.id)
         self.assertEqual(1, len(imports))
-        
+
     def test_import_transactions__failure(self):
-        self.fail('TODO')
+        del self.transactions_data[0]['account_id']
+        with self.assertRaises(Exception):
+            self.sut.import_transactions(transactions_data=self.transactions_data, filename='sample.txt', credit_card_id=self.credit_card.id)
+
+        transactions = Transaction.objects.filter(account_id=self.account.id)
+        self.assertEqual(0, len(transactions))
+        
+        imports = TransactionImport.objects.filter(credit_card_id=self.credit_card.id)
+        self.assertEqual(0, len(imports))
