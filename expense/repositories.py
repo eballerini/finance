@@ -8,9 +8,13 @@ class TransactionRepository:
         Transaction.objects.bulk_create(transactions)
         print("transactions saved")
 
-    def list(self):
-        # Transaction.objects.filter(account_id=account_id).order_by('date_added')
-        pass
+    def list(self, filters):
+        # valid filters are
+        # - account_id
+        # - transaction_import_id
+
+        result = Transaction.objects.filter(**filters).order_by('date_added')
+        return result
 
 class TransactionImportRepository:
 

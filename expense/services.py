@@ -20,3 +20,5 @@ class TransactionImportService:
                 transaction_data['transaction_import_id'] = transaction_import.id
                 
             self.transaction_repository.create_bulk(transactions_data)
+            
+        return transaction_import.id

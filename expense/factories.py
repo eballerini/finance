@@ -1,3 +1,5 @@
+from datetime import date, datetime
+from decimal import Decimal
 from factory.django import DjangoModelFactory
 
 from . import models
@@ -33,3 +35,23 @@ class CreditCardFactory(DjangoModelFactory):
     annual_fee = 120
     cycle_day = 1
     earning_rates = '1.5 point per dollar'
+
+class TransactionFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Transaction
+        
+    description = 'Food'
+    amount = Decimal('10')
+    date_added = date.today()
+    payment_method_type = 'CC'
+    # credit_card = models.ForeignKey('CreditCard', on_delete=models.PROTECT, null=True, blank=True)
+    # category = models.ForeignKey('Category', on_delete=models.PROTECT, null=True, blank=True)
+    # account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    
+class TransactionImportFactory(DjangoModelFactory):
+    class Meta:
+        model = models.TransactionImport
+        
+    created = datetime.now()
+    filename = 'sample.txt'
+    # credit_card = models.ForeignKey('CreditCard', on_delete=models.PROTECT)

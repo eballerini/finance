@@ -22,7 +22,7 @@ from .serializers import (AccountSerializer, CategorySerializer,
                           MyTokenObtainPairSerializer, TransactionSerializer,
                           TransactionSerializerGet, UserSerializer)
 from .services import TransactionImportService
-
+from .repositories import TransactionRepository
 
 class HelloWorldView(APIView):
 
@@ -175,7 +175,14 @@ class TransactionsView(APIView):
     def get(self, request, account_id):
         print("getting transactions for account " + str(account_id))
         
-        transactions = Transaction.objects.filter(account_id=account_id).order_by('date_added')
+        transaction_repository = TransactionRepository()
+        filters = {
+            'account_id': account_id,
+        }
+        if request.GET.get('transaction_import_id'):
+            filters['transaction_import_id'] = request.GET.get('transaction_import_id')
+
+        transactions = transaction_repository.list(filters)
         serializer = TransactionSerializerGet(transactions, many=True)        
         return JsonResponse(serializer.data, safe=False)
         
@@ -363,14 +370,15 @@ def handle_uploaded_file(credit_card_id, file, credit_card):
         
         # print("end of parts")
         
+    transaction_import_id = -1
     if len(transactions) > 0:
         print(f"saving {len(transactions)} transactions")
         service = TransactionImportService()
-        service.import_transactions(transactions_data=transactions, filename=file.name, credit_card_id=credit_card_id)
+        transaction_import_id = service.import_transactions(transactions_data=transactions, filename=file.name, credit_card_id=credit_card_id)
     else:
         print("no transactios to save")
         
-    return {}, errors
+    return {'transaction_import_id': transaction_import_id}, errors
         
         
 class TransactionsUploadView(APIView):
