@@ -163,15 +163,7 @@ class AccountsView(APIView):
         return JsonResponse(serializer.data, safe=False)
         
 class TransactionsView(APIView):
-    
-    def _get_transaction(user, transaction_id):
-        first_account = _get_first_account(user)
-        try:
-            transaction = Transaction.objects.get(id=transaction_id, account=first_account)
-        except Transaction.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        return transaction
-        
+
     def get(self, request, account_id):
         print("getting transactions for account " + str(account_id))
         
@@ -213,7 +205,9 @@ class TransactionsView(APIView):
         
     def delete(self, request, account_id, transaction_id):
         print('deleting transaction...')
-        transaction = TransactionsView._get_transaction(request.user, transaction_id)
+        account = _get_account(request.user, account_id)
+        # TODO move this to repo
+        transaction = Transaction.objects.get(id=transaction_id, account=account)
         transaction.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
@@ -395,12 +389,6 @@ class TransactionsUploadView(APIView):
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return JsonResponse(data, status=status.HTTP_201_CREATED)
-            
-    
-def _get_first_account(user):
-    accounts = Account.objects.filter(owner=user)
-    # TODO check if there are any accounts
-    return accounts[0]
     
 def _get_account(user, account_id):
     account = Account.objects.get(owner=user, id=account_id)
