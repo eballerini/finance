@@ -362,7 +362,8 @@ def handle_uploaded_file(credit_card_id, file, credit_card):
             print("data is invalid")
             print(serializer.errors)
         
-        # print("end of parts")
+    if errors:
+        return {}, errors
         
     transaction_import_id = -1
     if len(transactions) > 0:
