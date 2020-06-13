@@ -1,3 +1,4 @@
+from .file_handlers import VisaTDFileHanlder
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -326,6 +327,7 @@ class CategoryView(APIView):
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
         
+# TODO remove
 def handle_uploaded_file(credit_card_id, file, credit_card):
     print('credit_card_id: ' + credit_card_id)
     print("filename: " + file.name)
@@ -390,11 +392,25 @@ class TransactionsUploadView(APIView):
         if form.is_valid():
             credit_card_id = request.data.get('credit_card_id')
             credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
-            data, errors = handle_uploaded_file(credit_card_id, request.FILES['file'], credit_card)
+            file_handler = VisaTDFileHanlder()
+            
+            file = request.FILES['file']
+            transactions, errors = file_handler.parse_transactions(credit_card_id, file, credit_card)
+            
             if errors:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+                
+            transaction_import_id = -1
+            if len(transactions) > 0:
+                print(f"saving {len(transactions)} transactions")
+                service = TransactionImportService()
+                transaction_import_id = service.import_transactions(transactions_data=transactions, filename=file.name, credit_card_id=credit_card_id)
             else:
-                return JsonResponse(data, status=status.HTTP_201_CREATED)
+                print("no transactios to save")
+                
+            data = {'transaction_import_id': transaction_import_id}
+            
+            return JsonResponse(data, status=status.HTTP_201_CREATED)
     
 def _get_account(user, account_id):
     account = Account.objects.get(owner=user, id=account_id)
