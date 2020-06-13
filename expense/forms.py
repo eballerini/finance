@@ -2,8 +2,8 @@ from django import forms
 
 
 class CategoryForm(forms.Form):
-    name = forms.CharField(label='Name', max_length=100)
-    
+    name = forms.CharField(label="Name", max_length=100)
+
 
 # TODO replace with ModelForm
 class CreditCardForm(forms.Form):

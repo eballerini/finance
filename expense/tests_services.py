@@ -8,7 +8,6 @@ from .services import TransactionImportService
 
 
 class TransactionImportServiceIntegrationTest(TestCase):
-
     def setUp(self):
         super().setUp()
         self.user = UserFactory()
@@ -16,18 +15,22 @@ class TransactionImportServiceIntegrationTest(TestCase):
         self.credit_card = CreditCardFactory(owner=self.user, account=self.account)
         self.transactions_data = [
             {
-                'description': 'Air Canada 123',
-                'amount': 345.45,
-                'date_added': date(2019, 12, 12),
-                'payment_method_type': 'CC',
-                'credit_card_id': self.credit_card.id,
-                'account_id': self.account.id,
+                "description": "Air Canada 123",
+                "amount": 345.45,
+                "date_added": date(2019, 12, 12),
+                "payment_method_type": "CC",
+                "credit_card_id": self.credit_card.id,
+                "account_id": self.account.id,
             }
         ]
         self.sut = TransactionImportService()
 
     def test_import_transactions__success(self):
-        self.sut.import_transactions(transactions_data=self.transactions_data, filename='sample.txt', credit_card_id=self.credit_card.id)
+        self.sut.import_transactions(
+            transactions_data=self.transactions_data,
+            filename="sample.txt",
+            credit_card_id=self.credit_card.id,
+        )
 
         transactions = Transaction.objects.filter(account_id=self.account.id)
         self.assertEqual(1, len(transactions))
@@ -37,12 +40,16 @@ class TransactionImportServiceIntegrationTest(TestCase):
         self.assertEqual(1, len(imports))
 
     def test_import_transactions__failure(self):
-        del self.transactions_data[0]['account_id']
+        del self.transactions_data[0]["account_id"]
         with self.assertRaises(Exception):
-            self.sut.import_transactions(transactions_data=self.transactions_data, filename='sample.txt', credit_card_id=self.credit_card.id)
+            self.sut.import_transactions(
+                transactions_data=self.transactions_data,
+                filename="sample.txt",
+                credit_card_id=self.credit_card.id,
+            )
 
         transactions = Transaction.objects.filter(account_id=self.account.id)
         self.assertEqual(0, len(transactions))
-        
+
         imports = TransactionImport.objects.filter(credit_card_id=self.credit_card.id)
         self.assertEqual(0, len(imports))
