@@ -422,12 +422,18 @@ class TransactionsUploadView(APIView):
         if form.is_valid():
             credit_card_id = request.data.get("credit_card_id")
             credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
-            file_handler = VisaTDFileHanlder()
+            credit_card_name = credit_card.name.lower()
+            file_handler = None
+            if "td" in credit_card_name and "visa" in credit_card_name:
+                file_handler = VisaTDFileHanlder()
+            else:
+                errors = {"reason": "credit card type not supported"}
 
-            file = request.FILES["file"]
-            transactions, errors = file_handler.parse_transactions(
-                credit_card_id, file, credit_card
-            )
+            if file_handler:
+                file = request.FILES["file"]
+                transactions, errors = file_handler.parse_transactions(
+                    credit_card_id, file, credit_card
+                )
 
             if errors:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)
