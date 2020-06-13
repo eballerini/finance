@@ -37,7 +37,7 @@ class CreditCardSerializerPost(serializers.ModelSerializer):
 class DashboardSerializer(serializers.Serializer):
     num_credit_cards_opened = serializers.IntegerField()
     first_year_fees = serializers.IntegerField()
-    last_approval_date = serializers.DateField()
+    last_approval_date = serializers.DateField(allow_null=True)
 
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:

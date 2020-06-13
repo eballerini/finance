@@ -228,7 +228,10 @@ class DashboardView(APIView):
         credit_card_fees = [credit_card.first_year_fee for credit_card in credit_cards]
         first_year_fees = sum(credit_card_fees)
         
-        last_approval_date = credit_cards.last().approval_date
+        if num_credit_cards_opened > 0:
+            last_approval_date = credit_cards.last().approval_date
+        else:
+            last_approval_date = None
 
         serializer = DashboardSerializer(data={
             'num_credit_cards_opened': num_credit_cards_opened,
@@ -237,6 +240,8 @@ class DashboardView(APIView):
         })
         if serializer.is_valid():
             return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            print(serializer.errors)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
