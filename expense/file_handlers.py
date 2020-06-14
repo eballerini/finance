@@ -3,7 +3,7 @@ from datetime import datetime
 from .serializers import TransactionSerializer
 
 
-class VisaTDFileHanlder:
+class VisaTDCsvFileHanlder:
     def parse_transactions(self, credit_card_id, file, credit_card):
         print("credit_card_id: " + credit_card_id)
         print("filename: " + file.name)
