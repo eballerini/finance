@@ -1,4 +1,4 @@
-from .file_handlers import VisaTDCsvFileHanlder
+from .file_handlers import VisaTDCsvFileHandler
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -425,7 +425,7 @@ class TransactionsUploadView(APIView):
             credit_card_name = credit_card.name.lower()
             file_handler = None
             if "td" in credit_card_name and "visa" in credit_card_name:
-                file_handler = VisaTDCsvFileHanlder()
+                file_handler = VisaTDCsvFileHandler()
             else:
                 errors = {"reason": "credit card type not supported"}
 
