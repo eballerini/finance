@@ -14,9 +14,13 @@ class VisaTDCsvFileHandler:
             line = str(line_as_byte, "utf-8")
             print("processing: " + line)
             parts = line.split(",")
-            if parts[2] == "":
-                print("this is not a debit")
-                continue
+            if parts[2] != "":
+                amount = parts[2]
+            elif parts[3] != "":
+                amount = "-" + parts[3]
+            else:
+                errors = {"amount": "cannot parse amount"}
+                break
 
             try:
                 formatted_date = datetime.strptime(parts[0], "%m/%d/%Y").strftime(
@@ -29,7 +33,7 @@ class VisaTDCsvFileHandler:
 
             data = {
                 "description": parts[1],
-                "amount": parts[2],
+                "amount": amount,
                 "date_added": formatted_date,
                 "payment_method_type": "CC",
                 "credit_card": credit_card_id,
