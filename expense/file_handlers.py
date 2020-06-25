@@ -50,7 +50,52 @@ class VisaTDCsvFileHandler:
                 errors = serializer.errors
                 break
 
-        # if errors:
-        #     return {}, errors
+        return transactions, errors
+
+
+class AmexUSHiltonCsvFileHandler:
+    def parse_transactions(self, credit_card_id, file, credit_card):
+        transactions = []
+        errors = None
+        first_line = str(file.readline().rstrip(), "utf-8")
+        print(first_line)
+        if first_line != "Date,Description,Amount":
+            errors = {"header": "header is different than what's expected"}
+            return {}, errors
+
+        for line_as_byte in file:
+            line = str(line_as_byte, "utf-8")
+            print(line)
+            parts = line.split(",")
+
+            try:
+                formatted_date = datetime.strptime(parts[0], "%m/%d/%y").strftime(
+                    "%Y-%m-%d"
+                )
+            except ValueError as e:
+                print(e)
+                errors = {"date": str(e)}
+                break
+
+            data = {
+                "description": parts[1],
+                "amount": parts[2],
+                "date_added": formatted_date,
+                "payment_method_type": "CC",
+                "credit_card": credit_card_id,
+            }
+            serializer = TransactionSerializer(data=data)
+            if serializer.is_valid():
+                print("data is valid")
+                transaction_data = serializer.validated_data
+                transaction_data["account_id"] = credit_card.account_id
+                transactions.append(transaction_data)
+            else:
+                print("data is invalid")
+                print(serializer.errors)
+                errors = serializer.errors
+                break
+        # Date,Description,Amount
+        # 5/24/20,VIMEO,95.80
 
         return transactions, errors
