@@ -1,6 +1,12 @@
+from itertools import islice
 from datetime import datetime
 
 from .serializers import TransactionSerializer
+
+
+class BaseCsvFileHandler:
+    def parse_transactions(self, credit_card_id, file, credit_card):
+        pass
 
 
 class VisaTDCsvFileHandler:
@@ -58,12 +64,15 @@ class AmexUSHiltonCsvFileHandler:
         transactions = []
         errors = None
         first_line = str(file.readline().rstrip(), "utf-8")
-        print(first_line)
+        print(f"first line: {first_line}")
         if first_line != "Date,Description,Amount":
             errors = {"header": "header is different than what's expected"}
             return {}, errors
 
-        for line_as_byte in file:
+        # rewind to the beginning of the file
+        file.seek(0)
+
+        for line_as_byte in islice(file, 1, None):
             line = str(line_as_byte, "utf-8")
             print(line)
             parts = line.split(",")
