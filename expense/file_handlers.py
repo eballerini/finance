@@ -9,6 +9,17 @@ class BaseCsvFileHandler:
     def parse_transactions(self, credit_card_id, file, credit_card):
         pass
 
+    def format_date(self, unformatted_date, original_format):
+        try:
+            formatted_date = datetime.strptime(
+                unformatted_date, original_format
+            ).strftime("%Y-%m-%d")
+        except ValueError as e:
+            print(e)
+            raise TransactionImportValidationException({"date": str(e)})
+
+        return formatted_date
+
 
 class VisaTDCsvFileHandler(BaseCsvFileHandler):
     def parse_transactions(self, credit_card_id, file, credit_card):
@@ -29,13 +40,7 @@ class VisaTDCsvFileHandler(BaseCsvFileHandler):
                     {"amount": "cannot parse amount"}
                 )
 
-            try:
-                formatted_date = datetime.strptime(parts[0], "%m/%d/%Y").strftime(
-                    "%Y-%m-%d"
-                )
-            except ValueError as e:
-                print(e)
-                raise TransactionImportValidationException({"date": str(e)})
+            formatted_date = self.format_date(parts[0], "%m/%d/%Y")
 
             data = {
                 "description": parts[1],
@@ -79,13 +84,7 @@ class AmexUSHiltonCsvFileHandler(BaseCsvFileHandler):
             print(line)
             parts = line.split(",")
 
-            try:
-                formatted_date = datetime.strptime(parts[0], "%m/%d/%y").strftime(
-                    "%Y-%m-%d"
-                )
-            except ValueError as e:
-                print(e)
-                raise TransactionImportValidationException({"date": str(e)})
+            formatted_date = self.format_date(parts[0], "%m/%d/%y")
 
             data = {
                 "description": parts[1],
