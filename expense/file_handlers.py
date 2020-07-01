@@ -1,6 +1,7 @@
 from itertools import islice
 from datetime import datetime
 
+from .exceptions import TransactionImportValidationException
 from .serializers import TransactionSerializer
 
 
@@ -9,13 +10,12 @@ class BaseCsvFileHandler:
         pass
 
 
-class VisaTDCsvFileHandler:
+class VisaTDCsvFileHandler(BaseCsvFileHandler):
     def parse_transactions(self, credit_card_id, file, credit_card):
         print("credit_card_id: " + credit_card_id)
         print("filename: " + file.name)
         # TODO move this to repo
         transactions = []
-        errors = None
         for line_as_byte in file:
             line = str(line_as_byte, "utf-8")
             print("processing: " + line)
@@ -25,8 +25,9 @@ class VisaTDCsvFileHandler:
             elif parts[3] != "":
                 amount = "-" + parts[3]
             else:
-                errors = {"amount": "cannot parse amount"}
-                break
+                raise TransactionImportValidationException(
+                    {"amount": "cannot parse amount"}
+                )
 
             try:
                 formatted_date = datetime.strptime(parts[0], "%m/%d/%Y").strftime(
@@ -34,8 +35,7 @@ class VisaTDCsvFileHandler:
                 )
             except ValueError as e:
                 print(e)
-                errors = {"date": str(e)}
-                break
+                raise TransactionImportValidationException({"date": str(e)})
 
             data = {
                 "description": parts[1],
@@ -53,21 +53,23 @@ class VisaTDCsvFileHandler:
             else:
                 print("data is invalid")
                 print(serializer.errors)
-                errors = serializer.errors
-                break
+                raise TransactionImportValidationException(serializer.errors)
 
-        return transactions, errors
+        return transactions
 
 
-class AmexUSHiltonCsvFileHandler:
+AMEX_US_HILTON_EXPECTED_HEADER = "Date,Description,Amount"
+
+
+class AmexUSHiltonCsvFileHandler(BaseCsvFileHandler):
     def parse_transactions(self, credit_card_id, file, credit_card):
         transactions = []
-        errors = None
         first_line = str(file.readline().rstrip(), "utf-8")
         print(f"first line: {first_line}")
-        if first_line != "Date,Description,Amount":
-            errors = {"header": "header is different than what's expected"}
-            return {}, errors
+        if first_line != AMEX_US_HILTON_EXPECTED_HEADER:
+            raise TransactionImportValidationException(
+                {"header": f"header is not {AMEX_US_HILTON_EXPECTED_HEADER}"}
+            )
 
         # rewind to the beginning of the file
         file.seek(0)
@@ -83,8 +85,7 @@ class AmexUSHiltonCsvFileHandler:
                 )
             except ValueError as e:
                 print(e)
-                errors = {"date": str(e)}
-                break
+                raise TransactionImportValidationException({"date": str(e)})
 
             data = {
                 "description": parts[1],
@@ -102,9 +103,6 @@ class AmexUSHiltonCsvFileHandler:
             else:
                 print("data is invalid")
                 print(serializer.errors)
-                errors = serializer.errors
-                break
-        # Date,Description,Amount
-        # 5/24/20,VIMEO,95.80
+                raise TransactionImportValidationException(serializers.errors)
 
-        return transactions, errors
+        return transactions

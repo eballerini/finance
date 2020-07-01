@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from .exceptions import TransactionImportValidationException
 from .forms import CategoryForm, CreditCardForm, UploadFileForm
 from .models import Account, Category, CreditCard, Transaction
 from .serializers import (
@@ -437,9 +438,13 @@ class TransactionsUploadView(APIView):
 
             if file_handler:
                 file = request.FILES["file"]
-                transactions, errors = file_handler.parse_transactions(
-                    credit_card_id, file, credit_card
-                )
+                errors = None
+                try:
+                    transactions = file_handler.parse_transactions(
+                        credit_card_id, file, credit_card
+                    )
+                except TransactionImportValidationException as e:
+                    errors = e.errors
 
             if errors:
                 return Response(errors, status=status.HTTP_400_BAD_REQUEST)

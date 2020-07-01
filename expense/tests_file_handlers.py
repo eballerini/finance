@@ -2,6 +2,7 @@ from collections import OrderedDict
 from decimal import Decimal
 from datetime import date
 from django.test import TestCase
+from .exceptions import TransactionImportValidationException
 from .file_handlers import VisaTDCsvFileHandler, AmexUSHiltonCsvFileHandler
 from .factories import (
     AccountFactory,
@@ -28,10 +29,9 @@ class VisaTDCsvFileHandlerTests(BaseTests):
 
     def test__success(self):
         file = open("expense/test-files/TD/accountactivity-1credit-1debit.csv", "rb")
-        transactions, errors = self.sut.parse_transactions(
+        transactions = self.sut.parse_transactions(
             str(self.credit_card.id), file, self.credit_card
         )
-        self.assertIsNone(errors)
         self.assertEqual(2, len(transactions))
         expected_transaction = {
             "description": "PAYMENT",
@@ -52,6 +52,26 @@ class VisaTDCsvFileHandlerTests(BaseTests):
         }
         self.assertEqual(OrderedDict(expected_transaction), transactions[1])
 
+    def test_invalid_date__failure(self):
+        file = open("expense/test-files/TD/accountactivity-bad-date.csv", "rb")
+        expected_error = {
+            "date": "time data '13/05/2019' does not match format '%m/%d/%Y'"
+        }
+        with self.assertRaises(TransactionImportValidationException) as e:
+            self.sut.parse_transactions(
+                str(self.credit_card.id), file, self.credit_card
+            )
+        self.assertDictEqual(expected_error, e.exception.errors)
+
+    def test_no_amount__failure(self):
+        file = open("expense/test-files/TD/accountactivity-no-amount.csv", "rb")
+        expected_error = {"amount": "cannot parse amount"}
+        with self.assertRaises(TransactionImportValidationException) as e:
+            self.sut.parse_transactions(
+                str(self.credit_card.id), file, self.credit_card
+            )
+        self.assertDictEqual(expected_error, e.exception.errors)
+
 
 class AmexUSHiltonCsvFileHandlerTests(BaseTests):
     def setUp(self):
@@ -60,10 +80,9 @@ class AmexUSHiltonCsvFileHandlerTests(BaseTests):
 
     def test__success(self):
         file = open("expense/test-files/AmexUSHilton/activity.csv", "rb")
-        transactions, errors = self.sut.parse_transactions(
+        transactions = self.sut.parse_transactions(
             str(self.credit_card.id), file, self.credit_card
         )
-        self.assertIsNone(errors)
         self.assertEqual(3, len(transactions))
         expected_transaction = {
             "description": "VIM",
@@ -95,8 +114,9 @@ class AmexUSHiltonCsvFileHandlerTests(BaseTests):
 
     def test_no_header__failure(self):
         file = open("expense/test-files/AmexUSHilton/activity-no-header.csv", "rb")
-        transactions, errors = self.sut.parse_transactions(
-            str(self.credit_card.id), file, self.credit_card
-        )
-        expected_errors = {"header": "header is different than what's expected"}
-        self.assertEquals(expected_errors, errors)
+        expected_error = {"header": "header is not Date,Description,Amount"}
+        with self.assertRaises(TransactionImportValidationException) as e:
+            self.sut.parse_transactions(
+                str(self.credit_card.id), file, self.credit_card
+            )
+        self.assertDictEqual(expected_error, e.exception.errors)
