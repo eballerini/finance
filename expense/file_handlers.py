@@ -100,3 +100,24 @@ class AmexUSHiltonCsvFileHandler(BaseCsvFileHandler):
             transactions.append(transaction_data)
 
         return transactions
+
+
+class AmexBPCsvFileHandler(BaseCsvFileHandler):
+    def parse_transactions(self, credit_card_id, file, credit_card):
+        transactions = []
+        for line_as_byte in file:
+            line = str(line_as_byte, "utf-8")
+            print("processing: " + line)
+            parts = line.split(" ")
+            num_parts = len(parts)
+            unformatted_date = f"{parts[0]} {parts[1]} {parts[2]}"
+            amount_with_dollar_sign = parts[num_parts - 1]
+            amount = amount_with_dollar_sign[1:]  # exclude the $ sign
+            description = " ".join(parts[3 : num_parts - 1])
+            formatted_date = self.format_date(unformatted_date, "%d %b %Y")
+
+            data = self.create_data(description, amount, formatted_date, credit_card_id)
+            transaction_data = self.serialize_data(data, credit_card.account_id)
+            transactions.append(transaction_data)
+
+        return transactions

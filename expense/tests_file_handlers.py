@@ -3,7 +3,11 @@ from decimal import Decimal
 from datetime import date
 from django.test import TestCase
 from .exceptions import TransactionImportValidationException
-from .file_handlers import VisaTDCsvFileHandler, AmexUSHiltonCsvFileHandler
+from .file_handlers import (
+    VisaTDCsvFileHandler,
+    AmexUSHiltonCsvFileHandler,
+    AmexBPCsvFileHandler,
+)
 from .factories import (
     AccountFactory,
     CreditCardFactory,
@@ -120,3 +124,46 @@ class AmexUSHiltonCsvFileHandlerTests(BaseTests):
                 str(self.credit_card.id), file, self.credit_card
             )
         self.assertDictEqual(expected_error, e.exception.errors)
+
+
+class AmexBPCsvFileHandlerTests(BaseTests):
+    def setUp(self):
+        super().setUp()
+        self.sut = AmexBPCsvFileHandler()
+
+    def test__success(self):
+        file = open("expense/test-files/AmexBP/BP-activity.csv", "rb")
+        transactions = self.sut.parse_transactions(
+            str(self.credit_card.id), file, self.credit_card
+        )
+        # 03 Jun 2020 MEAL KIT* GOODFOOD MAR SAINT-LAURENT $77.25
+        self.assertEqual(3, len(transactions))
+        expected_transaction = {
+            "description": "MEAL KIT* GOODFOOD MAR SAINT-LAURENT",
+            "amount": Decimal("77.25"),
+            "date_added": date(2020, 6, 3),
+            "payment_method_type": "CC",
+            "credit_card": self.credit_card,
+            "account_id": self.credit_card.account_id,
+        }
+        self.assertEqual(OrderedDict(expected_transaction), transactions[0])
+        # 22 May 2020 APPLE.COM/BILL $1.46
+        expected_transaction = {
+            "description": "APPLE.COM/BILL",
+            "amount": Decimal("1.46"),
+            "date_added": date(2020, 5, 22),
+            "payment_method_type": "CC",
+            "credit_card": self.credit_card,
+            "account_id": self.credit_card.account_id,
+        }
+        self.assertEqual(OrderedDict(expected_transaction), transactions[1])
+        # 18 May 2020 NESPRESSO CANADA 855-325-5781 $158.00
+        expected_transaction = {
+            "description": "NESPRESSO CANADA 855-325-5781",
+            "amount": Decimal("158.00"),
+            "date_added": date(2020, 5, 18),
+            "payment_method_type": "CC",
+            "credit_card": self.credit_card,
+            "account_id": self.credit_card.account_id,
+        }
+        self.assertEqual(OrderedDict(expected_transaction), transactions[2])

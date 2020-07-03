@@ -1,4 +1,8 @@
-from .file_handlers import VisaTDCsvFileHandler, AmexUSHiltonCsvFileHandler
+from .file_handlers import (
+    VisaTDCsvFileHandler,
+    AmexUSHiltonCsvFileHandler,
+    AmexBPCsvFileHandler,
+)
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -416,6 +420,10 @@ def handle_uploaded_file(credit_card_id, file, credit_card):
 
 
 class TransactionsUploadView(APIView):
+    def _is_credit_card_of_type(self, keywords, credit_card_name):
+        matches = [keyword in credit_card_name for keyword in keywords]
+        return all(matches)
+
     def post(self, request):
         print(request.FILES)
         print(request.data)
@@ -425,14 +433,16 @@ class TransactionsUploadView(APIView):
             credit_card = CreditCard.objects.get(id=credit_card_id, owner=request.user)
             credit_card_name = credit_card.name.lower()
             file_handler = None
-            if "td" in credit_card_name and "visa" in credit_card_name:
+            if self._is_credit_card_of_type(["td", "visa"], credit_card_name):
                 file_handler = VisaTDCsvFileHandler()
-            elif (
-                "amex" in credit_card_name
-                and "us" in credit_card_name
-                and "hilton" in credit_card_name
+            elif self._is_credit_card_of_type(
+                ["amex", "us", "hilton"], credit_card_name
             ):
                 file_handler = AmexUSHiltonCsvFileHandler()
+            elif self._is_credit_card_of_type(
+                ["amex", "business", "platinum"], credit_card_name
+            ):
+                file_handler = AmexBPCsvFileHandler()
             else:
                 errors = {"reason": "credit card type not supported"}
 
